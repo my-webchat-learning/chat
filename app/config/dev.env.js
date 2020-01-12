@@ -2,7 +2,7 @@
  * @Author: hua
  * @Date: 2019-04-26 19:59:52
  * @LastEditors  : hua
- * @LastEditTime : 2019-12-24 11:09:40
+ * @LastEditTime : 2020-01-02 21:09:44
  */
 const merge = require('webpack-merge')
 const prodEnv = require('./prod.env')

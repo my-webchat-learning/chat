@@ -2,8 +2,8 @@
 @Author: hua
 @Date: 2019-09-29 12:03:29
 @description: 
-@LastEditors: hua
-@LastEditTime: 2019-12-10 15:53:38
+@LastEditors  : hua
+@LastEditTime : 2020-01-03 16:28:30
 '''
 from app import CONST
 from app import socketio
@@ -45,17 +45,17 @@ class RoomService:
             }
             Room().delete(filters)
             for item in address_book_data:
-                roomList = AddressBook.getRoomList(item['be_focused_user_id'])['list']
+                roomList = AddressBook.getRoomList(item['be_focused_user_id'])
                 socketio.emit('room',Utils.formatBody(roomList), namespace="/api",room='@broadcast.'+str(item['be_focused_user_id']))
-                roomList = AddressBook.getRoomList(item['focused_user_id'])['list']
-                socketio.emit('room',Utils.formatBody(roomList), namespace="/api",room='@broadcast.'+str(item['focused_user_id']))
+                """  roomList = AddressBook.getRoomList(item['focused_user_id'])['list']
+                socketio.emit('room',Utils.formatBody(roomList), namespace="/api",room='@broadcast.'+str(item['focused_user_id'])) """
         else:
             user_room_relation_data = Utils.db_l_to_d(UserRoomRelation.get(params['room_uuid']))
             filters = {
                 UserRoomRelation.room_uuid == params['room_uuid'],
                 UserRoomRelation.user_id == user_info['data']['id']
             }
-            data = UserRoomRelation().delete(filters)
+            UserRoomRelation().delete(filters)
             filters = {
                 Room.room_uuid == params['room_uuid']
             }
@@ -67,7 +67,7 @@ class RoomService:
             for item in user_room_relation_data:
                 roomList = UserRoomRelation.getRoomList(item['user_id'])['data']
                 socketio.emit('groupRoom', Utils.formatBody(roomList), namespace='/api', room='@broadcast.'+str(item['user_id']))
-        return  Utils.formatBody()
+        return  Utils.formatBody({},msg='删除成功')
     
     @staticmethod
     @socketValidator(name='room_uuid', rules={'required': True, 'type': 'string'})
@@ -104,7 +104,7 @@ class RoomService:
             params['msg'] = json.dumps(params['msg'])
             del params['Authorization']
             Msg().add(params)
-        return Utils.formatBody()
+        return Utils.formatBody({},msg='添加成功')
     
     @staticmethod
     @socketValidator(name='room_uuid', rules={'required': True, 'type': 'string'})
@@ -142,7 +142,26 @@ class RoomService:
             Msg.user_id == user_info['data']['id']
         }
         Msg().edit({'send_status': params['send_status']}, filters)
-        return Utils.formatBody()
+        return Utils.formatBody({}, msg='更新成功')
+
+    @staticmethod
+    @socketValidator(name='room_uuid', rules={'required': True, 'type': 'string'})
+    @socketValidator(name='user_id', rules={'required': True, 'type': 'integer'})
+    @UsersAuthJWT.socketAuth
+    @transaction
+    def updateReadStatusCloudRoomMsgByRoomIdAndUserId(params, user_info):
+        """ 
+            更新聊天数据
+            :param dict user_info
+            :param dict params
+            :return dict
+        """
+        filters = {
+            Msg.room_uuid == params['room_uuid'],
+            Msg.user_id == params['user_id']
+        }
+        Msg().edit({'read_status': 1}, filters)
+        return Utils.formatBody({}, msg='更新成功')
 
     @staticmethod
     @socketValidator(name='room_uuid', rules={'required': True, 'type': 'string'})
@@ -164,4 +183,4 @@ class RoomService:
             x['msg'] = json.loads(x['msg'])
             return x
         data['list'] = list(map(format, data['list'])) """
-        return Utils.formatBody(data)
+        return Utils.formatBody(data, msg='获取成功')

@@ -2,8 +2,8 @@
  * @Author: hua
  * @Date: 2019-02-26 09:08:43
  * @description: 聊天室核心页面
- * @LastEditors: hua
- * @LastEditTime: 2019-12-07 09:31:41
+ * @LastEditors  : hua
+ * @LastEditTime : 2019-12-29 14:21:16
  -->
 <template>
   <div style="font-size: 0;" id="msg_empty">
@@ -15,6 +15,7 @@
         </div>
         <ul>
           <li v-for="(key, index) in msgList" :key="index">
+          <div class="format_time" v-if="index>0 && key.created_at> parseInt(msgList[index-1].created_at)+60">{{formatTime(key.created_at)}}</div>
             <div class="chat-item" v-if="key.user_id == userInfo.id">
               <div class="mychat">
                 <vImg :imgUrl="key.head_img"  class="img" />
@@ -40,6 +41,11 @@
                   class="send_status color_danger"
                 >
                   <yd-icon name="error"></yd-icon>
+                </span>
+                 <!-- 消息读取状态键盘输入时更新-->
+                <span class="read_status" v-if="key.send_status == SUCCESS && currentRoomType == 0">
+                  <yd-badge v-if="key.read_status == 0">未读</yd-badge>
+                  <yd-badge v-else type="primary">已读</yd-badge>
                 </span>
               </div>
             </div>
@@ -83,6 +89,8 @@
       @handleFileOnChange="handleFileOnChange"
       @handleContent="handleContent"
       @handleStartRecord="handleStartRecord"
+      @onFocus="handleOnFocus"
+      @onBlur="handleOnblur"
       :recordShow="recordShow"
       :content="content"
       :touched="touched"
@@ -120,7 +128,7 @@ export default {
     MescrollVue, vImg, icons, def, cropperBox, vEmpty, inputWrapper
   },
   computed: {
-    ...mapGetters(["msgList", "currentRoomUuid", "currentRoomName", "userInfo", "htmlFontSize", "currentRoomSaveAction","RECORD","TEXT","RESEND","IMG","FILE","LOADING","SUCCESS","FAIL"])
+    ...mapGetters(["msgList", "currentRoomUuid", "currentRoomName", "currentRoomType","userInfo", "htmlFontSize", "currentRoomSaveAction","RECORD","TEXT","RESEND","IMG","FILE","LOADING","SUCCESS","FAIL"])
   },
   data() {
     return {
@@ -138,6 +146,7 @@ export default {
       cropperShow: false,
       lockDown: false,
       moreInfoShow: false,
+      onFocusLock:false,
       clientHeight:0,
       data: [],
       reqImgData: {
@@ -221,15 +230,23 @@ export default {
             this.handleSendShow();
           //}
         }else{
-          //setTimeout(() => {
-            if(this.iconsShow !==true && this.defsShow !==true){
-              this.isPartChatPage = false
-            }
-            this.handleHeightToBottom()
-            this.handleSendShow();
-          //}, 200);
+          if(this.iconsShow !==true && this.defsShow !==true){
+            this.isPartChatPage = false
+          }
+          this.handleHeightToBottom()
+          this.handleSendShow();
         }
       }; 
+    },
+    handleOnFocus(){
+      if(!this.onFocusLock){
+        this.onFocusLock = true
+        send("input", { room_uuid: this.currentRoomUuid, even:'focus' }, 'broadcast');
+      }
+    },
+    handleOnblur(){
+      this.onFocusLock = false
+      send("input", { room_uuid: this.currentRoomUuid, even:'blur' }, 'broadcast');
     },
     handleHeightToBottom(){
       if(this.isPartChatPage == false){
@@ -493,17 +510,12 @@ export default {
           entry.file(function(file){
               var reader = new plus.io.FileReader();
               reader.onloadend = function (e) {
-                //console.log(e.target.result);
                 uploadFile({dataUrl:e.target.result,name:file.name,size:file.size,type:file.type}).then(res => {
                   that.recordingShow = false
                   var BenzAMRRecorder = require('benz-amr-recorder');
                   var amr = new BenzAMRRecorder();
                   let url = process.env.VUE_APP_CLIENT_API+ res.data.path
-                  console.log(url)
                   amr.initWithUrl(url).then(function() {
-                    //获取录音长度
-                    //amr.getDuration(); 
-                    console.log('录音路径1'+url)
                     chatSend({
                       data: {
                         msg:JSON.stringify({url:url,duration: amr.getDuration(),status:false}),
@@ -526,7 +538,6 @@ export default {
       let that = this;
       let data = JSON.parse(JSON.stringify(rawData))
       let msgList = JSON.parse(JSON.stringify(this.msgList))
-       console.log(data)
       data['status']=true
       msgList[index]['msg'] = JSON.stringify(data)
       this.$store.dispatch('updateMsgList', msgList)
@@ -548,6 +559,9 @@ export default {
     },
     recCropperShow(value){
       this.cropperShow = value;
+    },
+    formatTime(value){
+      return utils.time.formatDate(value, 'yyyy-MM-dd hh:mm:ss')
     },
     formatFileName(msg){
       try{
@@ -593,7 +607,6 @@ export default {
     data: "handleSendShow",
     msgList: {handler(){this.handleMsgListToBottom(100)}},
     'recordShow'(newVal,oldVal){
-      console.log('录音显示',newVal)
       if(!newVal){
         window.r.stop();
       }

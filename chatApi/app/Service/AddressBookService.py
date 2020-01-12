@@ -2,8 +2,8 @@
 @Author: hua
 @Date: 2019-09-29 11:30:28
 @description: 
-@LastEditors: hua
-@LastEditTime: 2019-12-12 14:49:04
+@LastEditors  : hua
+@LastEditTime : 2020-01-02 21:13:57
 '''
 from app import CONST
 from app import cache
@@ -62,11 +62,12 @@ class AddressBookService:
                 room_uuid, params['focused_user_id'], user_info['data']['id'])
             if status == False:
                 return Utils.formatError(CONST['CODE']['BAD_REQUEST']['value'],msg='添加失败')
-        
+            userData = Users().getOne({Users.id == user_info['data']['id']})
             #回复被添加用户
             socketio.emit('beg', Utils.formatBody({
                 'action':'beg_add_success',
-                'focused_user_id' : user_info['data']['id']
+                'focused_user_id' : user_info['data']['id'],
+                'nick_name': userData['nick_name']
             }), namespace='/api', room='@broadcast.'+str(params['focused_user_id']))
             #添加后同步房间
             addressBookData = AddressBook.get(room_uuid)
@@ -95,7 +96,7 @@ class AddressBookService:
         """ 获取添加好友缓存 """
         data = cache.get('@broadcast.beg'+str(user_info['data']['id']))
         if data is None:
-            return Utils.formatBody()
+            return Utils.formatBody({},msg='获取成功')
         else:
             cache.delete('@broadcast.beg'+str(user_info['data']['id']))
             return Utils.formatBody(data)
@@ -104,4 +105,4 @@ class AddressBookService:
     @UsersAuthJWT.socketAuth
     def begCacheDel(params, user_info):
         cache.delete('@broadcast.beg'+str(user_info['data']['id']))
-        return Utils.formatBody()
+        return Utils.formatBody({},msg='删除成功')

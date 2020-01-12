@@ -2,16 +2,16 @@
 @Author: hua
 @Date: 2019-06-10 10:02:46
 @description: 
-@LastEditors: hua
-@LastEditTime: 2019-12-09 15:30:00
+@LastEditors  : hua
+@LastEditTime : 2020-01-11 13:04:59
 '''
 
 from app import app
-from app import cache
 from flask import make_response
 from app.Vendor.Decorator import validator
 from app.Vendor.Captcha import validate_picture
 from app.Vendor.UsersAuthJWT import UsersAuthJWT
+from app import delayQueue as redisCache
 from app.Admin.Service.AdminService import AdminService
 from app.Admin.Controllers.BaseController import BaseController
 from app.Vendor.Decorator import transaction
@@ -26,7 +26,7 @@ import time
 @validator(name="captcha", rules={'required': True,'type': 'string'})
 def adminLogin(params):
     # 将验证码字符串储存在session中
-    captcha = cache.get('captcha')
+    captcha = redisCache.client.get('captcha').decode()
     if captcha is None:
         return BaseController().error(msg='验证码错误')
     inputCaptcha = params['captcha'].lower()
@@ -34,6 +34,7 @@ def adminLogin(params):
     if captcha != inputCaptcha:
         return BaseController().error(msg='验证码错误')
     res = AdminService().login(params)
+    redisCache.client.delete('captcha')
     """ if res['code'] == CONST['CODE']['SUCCESS']['value']:
         return  BaseController.json(res) """
     return BaseController().json(res)
@@ -47,7 +48,7 @@ def getCode():
     buf = BytesIO()
     image.save(buf, 'jpeg')
     # 将验证码字符串储存在session中
-    cache.set('captcha', data)
+    redisCache.client.set('captcha', data)
     # 把二进制作为response发回前端，并设置首部字段
     response = make_response(buf.getvalue(), 200)
     response.headers['Content-Type'] = 'image/gif'
