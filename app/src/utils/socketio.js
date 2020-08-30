@@ -2,8 +2,8 @@
  * @Author: hua
  * @Date: 2019-09-03 17:07:10
  * @description: 
- * @LastEditors  : hua
- * @LastEditTime : 2020-01-04 14:24:14
+ * @LastEditors: hua
+ * @LastEditTime: 2020-05-16 09:02:59
  */
 
 import store from '../store'
@@ -48,7 +48,7 @@ export function setupListen(){
 export function setDown(){
 	clearTimeout(window.timeOut)
 	if(typeof window.apiSocket == 'undefined'){
-		window.apiSocket = io.connect(process.env.VUE_APP_CLIENT_API + '/api');
+		window.apiSocket = io.connect(process.env.VUE_APP_CLIENT_SOCKET + '/api');
 	}
 	window.apiSocket.io.disconnect();    //先主动关闭连接
 	//删除所有监听
@@ -110,6 +110,7 @@ export function response(res){
 			reject(res)
 		}
 		if (res.error_code === store.getters.CODE.ERROR_AUTH_CHECK_TOKEN_FAIL.value) {
+			window.tryBroadcastLinkCount = 0
 			clearTimeout(window.sendTimeOut)
 			clearTimeout(window.broadcastTimeOut)
 			Loading.close()
@@ -120,7 +121,7 @@ export function response(res){
 			router.push({name: 'authLogin'})
 			reject(res)
 		}
-		if (res.error_code === 20000) {
+		if (res.error_code === store.getters.CODE.ROOM_NO_EXIST.value) {
 			if(res.show == true){
 				Toast({mes:res.msg,icon: 'error'})
 			}
@@ -144,8 +145,8 @@ export function rsaEncode(data, publicKey){
 	encrypt.setPublicKey(publicKey);
 	let str = JSON.stringify(data)
 	let encryptStr = ""
-	for(let i=0; i<str.length;i+=100){
-		encryptStr = encryptStr + encrypt.encrypt(str.substring(i,i+100))+",";
+	for(let i=0; i<str.length;i+=20){
+		encryptStr = encryptStr + encrypt.encrypt(str.substring(i,i+20))+",";
 	}
 	encryptStr = encryptStr.substring(0,encryptStr.length-1);
 	return encryptStr
@@ -199,6 +200,9 @@ export function formatLastMsg(last_msg){
 		}
 		if(data['type'] == store.getters.TEXT ){
 			return data['msg']
+		}
+		if(data['type'] == store.getters.CHAT_NOTIFY ){
+			return JSON.parse(data['msg'])
 		}
 		return data['msg']
 	}catch(e){
