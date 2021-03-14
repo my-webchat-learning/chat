@@ -1,10 +1,10 @@
 <!--
  * @Author: hua
- * @Date: 2019-02-01 17:12:59
+ * @Date: 2019-02-01 14:08:36
+ * @description: 通讯录
  * @LastEditors: hua
- * @LastEditTime: 2020-04-19 20:27:40
+ * @LastEditTime: 2020-10-23 20:30:48
  -->
-
 <template>
   <div class="content">
     <!-- 头部开始 -->
@@ -99,7 +99,7 @@ import { mapGetters, mapMutations } from "vuex";
 import { addressBookGet } from "@/socketioApi/addressBook";
 import { userRoomRelationGet } from "@/socketioApi/userRoomRelation";
 import { Toast } from "vue-ydui/dist/lib.rem/dialog";
-import { joinChatSend } from "@/socketIoApi/chat";
+import { joinChatSend } from "@/socketioApi/chat";
 import vImg from "@/components/v-img/v-img";
 export default {
   components: { vImg },

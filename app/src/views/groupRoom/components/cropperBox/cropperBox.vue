@@ -1,9 +1,9 @@
 <!--
  * @Author: hua
  * @Date: 2019-07-18 08:54:06
- * @description: 
- * @LastEditors  : hua
- * @LastEditTime : 2020-01-23 16:38:41
+ * @description: 裁剪页面
+ * @LastEditors: hua
+ * @LastEditTime: 2020-10-23 20:35:15
  -->
 <template>
    <!-- 裁剪图 -->
@@ -42,7 +42,7 @@
 import { mapGetters, mapMutations } from "vuex";
 import { uploadBase64 } from "@/socketioApi/common";
 import { VueCropper } from "vue-cropper";
-import { chatSend } from "@/socketIoApi/chat";
+import { chatSend } from "@/socketioApi/chat";
 import {Loading} from "vue-ydui/dist/lib.rem/dialog";
 export default {
     data(){

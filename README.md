@@ -2,7 +2,7 @@
  * @Author: hua
  * @Date: 2019-02-01 13:57:47
  * @LastEditors: hua
- * @LastEditTime: 2020-05-05 09:24:14
+ * @LastEditTime: 2020-10-06 18:41:02
  -->
 
 ### 工具鸡-聊天室
@@ -117,6 +117,13 @@ http://doc.zhuhui.store
         python socketRun.py
         python run.py
 
+### win10安装工具鸡-聊天室视频
+https://www.bilibili.com/video/BV1154y1y7H3
+
+### centos安装工具鸡-聊天室视频
+https://www.bilibili.com/video/BV1yD4y1R738
+
+
 #### 作者其他开源产品
 
 1. <a href="https://gitee.com/huashiyuting/flask " target="_blank">mvc 分层,json api 载体(中庸)的 flask</a>
@@ -134,7 +141,7 @@ http://doc.zhuhui.store
 
 ### 购买实时最新版
 
-[淘宝链接](https://item.taobao.com/item.htm?id=607024716747).
+[淘宝链接](https://item.taobao.com/item.htm?ft=t&id=627987350463).
 
 ### 二次开发
 
